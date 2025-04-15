@@ -3,6 +3,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+import requests
 
 ## to call data from env
 main_path = Path(__file__).parent.parent
@@ -17,10 +18,30 @@ BOT_USERNAME = os.getenv('BOT_USERNAME')
 # weather forecast conv
 WF_FIRST_QUESTION, WF_SECOND_QUESTION = range(2)
 
+def clean_date(date):
+    return date.replace('+08:00', '').replace('T', ' ')
 
 # query api
 def get_weather_details(area):
-    return 'NA'
+
+    url = "https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast"
+
+    response = requests.get(url)
+    retrieve_key_info = response.json()['data']['items'][0]
+    update_time = retrieve_key_info['update_timestamp']
+    valid_forecast_period = retrieve_key_info['valid_period']
+    start_forecast_period = valid_forecast_period['start']
+    end_forecast_period = valid_forecast_period['end']
+    forecast_all_area = retrieve_key_info['forecasts']
+
+    area_of_interest = area.replace('_weather_forecast', '').lower().strip()
+
+    forecast_area = None
+    for data in forecast_all_area:
+        if data['area'].lower().strip() == area_of_interest:
+            forecast_area = data['forecast']
+            break
+    return clean_date(update_time), clean_date(start_forecast_period), clean_date(end_forecast_period), forecast_area, area_of_interest
 
 
 # Commands
@@ -60,42 +81,42 @@ async def weather_forecast(update: Update, context: CallbackContext):
     # create buttons
     if query.data == 'A_D_weather_forecast':
         buttons = [
-        [InlineKeyboardButton("Ang Mo Kio", callback_data='AMK_weather_forecast')],
+        [InlineKeyboardButton("Ang Mo Kio", callback_data='Ang Mo Kio_weather_forecast')],
         [InlineKeyboardButton("Bedok", callback_data='Bedok_weather_forecast')],
         [InlineKeyboardButton("Bishan", callback_data='Bishan_weather_forecast')],
-        [InlineKeyboardButton("Boon Lay", callback_data='BL_weather_forecast')],
-        [InlineKeyboardButton("Bukit Batok", callback_data='BB_weather_forecast')],
-        [InlineKeyboardButton("Bukit Merah", callback_data='BM_weather_forecast')],
-        [InlineKeyboardButton("Bukit Panjang", callback_data='BP_weather_forecast')],
-        [InlineKeyboardButton("Bukit Timah", callback_data='BT_weather_forecast')],
-        [InlineKeyboardButton("Central Water Catchment", callback_data='CWC_weather_forecast')],
+        [InlineKeyboardButton("Boon Lay", callback_data='Boon Lay_weather_forecast')],
+        [InlineKeyboardButton("Bukit Batok", callback_data='Bukit Batok_weather_forecast')],
+        [InlineKeyboardButton("Bukit Merah", callback_data='Bukit Merah_weather_forecast')],
+        [InlineKeyboardButton("Bukit Panjang", callback_data='Bukit Panjang_weather_forecast')],
+        [InlineKeyboardButton("Bukit Timah", callback_data='Bukit Timah_weather_forecast')],
+        [InlineKeyboardButton("Central Water Catchment", callback_data='Central Water Catchment_weather_forecast')],
         [InlineKeyboardButton("Changi", callback_data='Changi_weather_forecast')],
-        [InlineKeyboardButton("Choa Chu Kang", callback_data='CCK_weather_forecast')],
+        [InlineKeyboardButton("Choa Chu Kang", callback_data='Choa Chu Kang_weather_forecast')],
         [InlineKeyboardButton("City", callback_data='City_weather_forecast')],
         [InlineKeyboardButton("Clementi", callback_data='Clementi_weather_forecast')]]
     elif query.data == 'E_J_weather_forecast':
         buttons = [
         [InlineKeyboardButton("Geylang", callback_data='Geylang_weather_forecast')],
         [InlineKeyboardButton("Hougang", callback_data='Hougang_weather_forecast')],
-        [InlineKeyboardButton("Jalan Bahar", callback_data='JB_weather_forecast')],
-        [InlineKeyboardButton("Jurong East", callback_data='JE_weather_forecast')],
-        [InlineKeyboardButton("Jurong Island", callback_data='JI_weather_forecast')],
-        [InlineKeyboardButton("Jurong West", callback_data='JW_weather_forecast')]]
+        [InlineKeyboardButton("Jalan Bahar", callback_data='Jalan Bahar_weather_forecast')],
+        [InlineKeyboardButton("Jurong East", callback_data='Jurong East_weather_forecast')],
+        [InlineKeyboardButton("Jurong Island", callback_data='Jurong Island_weather_forecast')],
+        [InlineKeyboardButton("Jurong West", callback_data='Jurong West_weather_forecast')]]
     elif query.data == 'K_N_weather_forecast':
         buttons = [
             [InlineKeyboardButton("Kallang", callback_data='Kallang_weather_forecast')],
-            [InlineKeyboardButton("Lim Chu Kang", callback_data='LCK_weather_forecast')],
+            [InlineKeyboardButton("Lim Chu Kang", callback_data='Lim Chu Kang_weather_forecast')],
             [InlineKeyboardButton("Mandai", callback_data='Mandai_weather_forecast')],
-            [InlineKeyboardButton("Marine Parade", callback_data='MP_weather_forecast')],
+            [InlineKeyboardButton("Marine Parade", callback_data='Marine Parade_weather_forecast')],
             [InlineKeyboardButton("Novena", callback_data='Novena_weather_forecast')]
         ]
     elif query.data == 'O_R_weather_forecast':
         buttons = [
-            [InlineKeyboardButton("Pasir Ris", callback_data='PR_weather_forecast')],
-        [InlineKeyboardButton("Paya Lebar", callback_data='PL_weather_forecast')],
+            [InlineKeyboardButton("Pasir Ris", callback_data='Pasir Ris_weather_forecast')],
+        [InlineKeyboardButton("Paya Lebar", callback_data='Paya Lebar_weather_forecast')],
         [InlineKeyboardButton("Pioneer", callback_data='Pioneer_weather_forecast')],
-        [InlineKeyboardButton("Pulau Tekong", callback_data='PT_weather_forecast')],
-        [InlineKeyboardButton("Pulau Ubin", callback_data='PU_weather_forecast')],
+        [InlineKeyboardButton("Pulau Tekong", callback_data='Pulau Tekong_weather_forecast')],
+        [InlineKeyboardButton("Pulau Ubin", callback_data='Pulau Ubin_weather_forecast')],
         [InlineKeyboardButton("Punggol", callback_data='Punggol_weather_forecast')],
         [InlineKeyboardButton("Queenstown", callback_data='Queenstown_weather_forecast')]
         ]
@@ -106,10 +127,10 @@ async def weather_forecast(update: Update, context: CallbackContext):
         [InlineKeyboardButton("Sengkang", callback_data='Sengkang_weather_forecast')],
         [InlineKeyboardButton("Sentosa", callback_data='Sentosa_weather_forecast')],
         [InlineKeyboardButton("Serangoon", callback_data='Serangoon_weather_forecast')],
-        [InlineKeyboardButton("Southern Islands", callback_data='SI_weather_forecast')],
-        [InlineKeyboardButton("Sungei Kadut", callback_data='SK_weather_forecast')],
+        [InlineKeyboardButton("Southern Islands", callback_data='Southern Islands_weather_forecast')],
+        [InlineKeyboardButton("Sungei Kadut", callback_data='Sungei Kadut_weather_forecast')],
         [InlineKeyboardButton("Tampines", callback_data='Tampines_weather_forecast')],
-        [InlineKeyboardButton("Toa Payoh", callback_data='TP_weather_forecast')],
+        [InlineKeyboardButton("Toa Payoh", callback_data='Toa Payoh_weather_forecast')],
         [InlineKeyboardButton("Tuas", callback_data='Tuas_weather_forecast')]
         ]
     else :
@@ -129,9 +150,9 @@ async def get_weather_forecast_by_area(update: Update, context: CallbackContext)
     query = update.callback_query
     await query.answer() #ack the button press
     response = query.data
-    weather = get_weather_details(response)
+    update_time, start_forecast_period, end_forecast_period, forecast_area, area_of_interest = get_weather_details(response)
 
-    await query.message.reply_text(f"Hello! The weather at {response} is {weather}")
+    await query.message.reply_text(f"Hello! The weather at {area_of_interest} is {forecast_area}. Data is updated on {update_time}, forecast between {start_forecast_period} and {end_forecast_period}")
     return ConversationHandler.END
 
 ## /rainfall_now
